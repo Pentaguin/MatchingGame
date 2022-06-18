@@ -11,11 +11,14 @@ class MatchingGame {
     }
 }
 
-class Board implements ActionListener {
-    JButton firstOpenedCard = null;
-    JFrame frame;
-    int setFound = 0;
-    int cells;
+class Board implements ActionListener{
+    private JButton firstOpenedCard = null;
+    private JFrame frame;
+    private int setFound = 0;
+    private int cells;
+    private Timer timer;
+    private ImageIcon cardImage = new ImageIcon("Images/back.jpg");
+    private boolean stopClick = false;
 
     public void createBoard(int rows, int cols) {
         frame = new JFrame();
@@ -31,59 +34,74 @@ class Board implements ActionListener {
         }
 
         Collections.shuffle(cardList);
+        
 
         for (Integer i = 0; i < cells; i++) {
-            JButton button = new JButton(cardList.get(i).toString());
+            JButton button = new JButton();            
+            button.setIcon(cardImage);
             button.setActionCommand(cardList.get(i).toString());
             button.addActionListener(this);
             button.setBackground(Color.white);
+            button.setRolloverEnabled (false);
             frame.add(button);
         }
 
         frame.setTitle("Matching Game");
         frame.setLayout(new GridLayout(rows, cols));
-        frame.setSize(300, 300);
+        frame.setSize(1080,1920);
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);// Setting default close operation
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if(stopClick){
+            return;
+        }
+
         JButton openedCard = (JButton) e.getSource();
         if (firstOpenedCard == null) {
             firstOpenedCard = openedCard;
-            firstOpenedCard.setBackground(Color.green);
+            firstOpenedCard.setIcon(new ImageIcon("Images/" + firstOpenedCard.getActionCommand() + ".jpg"));
         } else {
             if (firstOpenedCard == openedCard) {
                 return;
             } else if (firstOpenedCard.getActionCommand().equals(openedCard.getActionCommand())) {
-                System.out.println("Set found");
-
-                firstOpenedCard.setBackground(Color.cyan);
-                openedCard.setBackground(Color.cyan);
-
+                firstOpenedCard.setIcon(new ImageIcon("Images/" + firstOpenedCard.getActionCommand() + ".jpg"));
                 firstOpenedCard.removeActionListener(this);
-                openedCard.removeActionListener(this);
-
+                firstOpenedCard.setFocusPainted(false);
                 firstOpenedCard = null;
+
+                openedCard.setIcon(new ImageIcon("Images/" + openedCard.getActionCommand() + ".jpg"));
+                openedCard.removeActionListener(this);
+                openedCard.setFocusPainted(false);    
+                
                 setFound++;
 
                 if (setFound == cells) {
                     // end game
                 }
             } else {
-                openedCard.setBackground(Color.green);
 
-                // delay here
+                timer = new Timer(1500, new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        firstOpenedCard.setIcon(cardImage);
+                        openedCard.setIcon(cardImage);
+                        firstOpenedCard = null;
+                        stopClick = false;
+                    }
+                });
 
-                firstOpenedCard.setBackground(Color.white);
-                openedCard.setBackground(Color.white);
-                firstOpenedCard = null;
+                stopClick = true;
+                openedCard.setIcon(new ImageIcon("Images/" + openedCard.getActionCommand() + ".jpg"));
+                timer.setRepeats(false);
+                timer.start();
+
+
             }
 
         }
 
-        System.out.println(openedCard.getActionCommand());
-
     }
+
 }
